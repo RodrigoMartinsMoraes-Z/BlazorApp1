@@ -1,0 +1,110 @@
+﻿@page "/arquivo"
+@using System.IO
+@using BlazorInputFile
+@using BlazorApp1.Scripts
+@using System.Collections
+@inject IJSRuntime JSRuntime
+
+<style>
+    .rotateimg180 {
+        -webkit-transform: rotate(180deg);
+        -moz-transform: rotate(180deg);
+        -ms-transform: rotate(180deg);
+        -o-transform: rotate(180deg);
+        transform: rotate(180deg);
+    }
+
+    .rotateimg90 {
+        -webkit-transform: rotate(90deg);
+        -moz-transform: rotate(90deg);
+        -ms-transform: rotate(90deg);
+        -o-transform: rotate(90deg);
+        transform: rotate(90deg);
+    }
+
+    .rotateimg0 {
+        -webkit-transform: rotate(0deg);
+        -moz-transform: rotate(0deg);
+        -ms-transform: rotate(0deg);
+        -o-transform: rotate(0deg);
+        transform: rotate(0deg);
+    }
+
+    .rotateimg270 {
+        -webkit-transform: rotate(270deg);
+        -moz-transform: rotate(270deg);
+        -ms-transform: rotate(270deg);
+        -o-transform: rotate(270deg);
+        transform: rotate(270deg);
+    }
+</style>
+
+<div class="container card">
+    <div class="card-body">
+        <div class="row">
+            <InputFile OnChange="HandleFileSelected"/>
+        </div>
+
+        @if (arquivo != null)
+        {
+            <div class="row">Name: @arquivo.Name</div>
+            <div class="row">Size in bytes: @arquivo.Size</div>
+            <div class="row">Last modified date: @arquivo.LastModified.ToShortDateString()</div>
+            <div class="row">Content type: @arquivo.Type</div>
+
+            @if (!string.IsNullOrEmpty(imagemByte))
+            {
+                <br />
+                <div class="row">
+                    <button type="button" class="btn btn-sm btn-outline-primary" @onclick="GirarImagem">Girar Imagem</button>
+                </div>
+                <br />
+                <div class="row">
+                    <div class="col-sm-6 @giro">
+                        <img src="data:@arquivo.Type;base64, @imagemByte" width="480" height="480" class=" drift-trigger" data-zoom="data:@arquivo.Type;base64, @imagemByte" @onload="zoom" />
+                    </div>
+                    <div class="col-sm-6 @giro">
+                        <div class="detail"></div>
+                    </div>
+                </div>
+
+            }
+        }
+    </div>
+</div>
+
+
+@code {
+    IFileListEntry arquivo;
+
+    public static string imagemByte;
+
+    int posicaoDeGiro = 0;
+    string giro = "rotateimg0";
+
+    void GirarImagem()
+    {
+
+        if (posicaoDeGiro == 270) posicaoDeGiro = 0;
+
+        else posicaoDeGiro += 90;
+
+        giro = "rotateimg" + posicaoDeGiro.ToString();
+
+    }
+
+    async Task<bool> HandleFileSelected(IFileListEntry[] files)
+    {
+        arquivo = files.FirstOrDefault();
+
+        if (arquivo.Type.Contains("image"))
+            imagemByte = await Auxiliar.ImagemEmByte(arquivo);
+
+        return true;
+    }
+
+    async void zoom()
+    {
+        await JSRuntime.InvokeVoidAsync("zoom");
+    }
+}
