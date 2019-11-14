@@ -41,33 +41,47 @@
 
 <div class="container card">
     <div class="card-body">
-        <div class="row">
-            <InputFile OnChange="HandleFileSelected"/>
+        <div class="row col-sm-auto btn btn-sm">
+            <InputFile OnChange="HandleFileSelected" />
         </div>
 
         @if (arquivo != null)
         {
-            <div class="row">Name: @arquivo.Name</div>
-            <div class="row">Size in bytes: @arquivo.Size</div>
-            <div class="row">Last modified date: @arquivo.LastModified.ToShortDateString()</div>
-            <div class="row">Content type: @arquivo.Type</div>
+            <div class="row col-auto">Name: @arquivo.Name</div>
+            <div class="row col-auto">Size in bytes: @arquivo.Size</div>
+            <div class="row col-auto">Last modified date: @arquivo.LastModified.ToShortDateString()</div>
+            <div class="row col-auto">Content type: @arquivo.Type</div>
 
-            @if (!string.IsNullOrEmpty(imagemByte))
+            @if (arquivo.Type.Contains("image"))
             {
                 <br />
-                <div class="row">
+                <div class="row col-auto">
                     <button type="button" class="btn btn-sm btn-outline-primary" @onclick="GirarImagem">Girar Imagem</button>
                 </div>
                 <br />
-                <div class="row">
-                    <div class="col-sm-6 @giro">
-                        <img src="data:@arquivo.Type;base64, @imagemByte" width="480" height="480" class=" drift-trigger" data-zoom="data:@arquivo.Type;base64, @imagemByte" @onload="zoom" />
+                <div class="row" >
+                    <div class="col-6">
+                        <img src="data:@arquivo.Type;base64, @arquivoBase64" style="width:100%; height:auto" class=" drift-trigger" data-zoom="data:@arquivo.Type;base64, @arquivoBase64" @onload="zoom" />
                     </div>
-                    <div class="col-sm-6 @giro">
+                    <div class="col-6 @giro" >
                         <div class="detail"></div>
                     </div>
                 </div>
 
+            }
+
+            @if (arquivo.Type.Contains("pdf"))
+            {
+                <div class="row col-auto">
+                    <embed src="data:@arquivo.Type;base64,@arquivoBase64" height="480" type="@arquivo.Type" style="width:100%">
+                </div>
+            }
+
+            @if (arquivo.Type.Contains("audio"))
+            {
+                <div class="row col-auto">
+                    <audio src="data:@arquivo.Type;base64,@arquivoBase64" controls="controls" autobuffer="autobuffer" style="width:100%"></audio>
+                </div>
             }
         }
     </div>
@@ -77,10 +91,10 @@
 @code {
     IFileListEntry arquivo;
 
-    public static string imagemByte;
+    private string arquivoBase64;
 
-    int posicaoDeGiro = 0;
-    string giro = "rotateimg0";
+    private int posicaoDeGiro = 0;
+    private string giro = "rotateimg0";
 
     void GirarImagem()
     {
@@ -97,8 +111,8 @@
     {
         arquivo = files.FirstOrDefault();
 
-        if (arquivo.Type.Contains("image"))
-            imagemByte = await Auxiliar.ImagemEmByte(arquivo);
+        arquivoBase64 = await Auxiliar.ArquivoEmBase64(arquivo);
+
 
         return true;
     }
