@@ -71,7 +71,7 @@
             await JSRuntime.InvokeVoidAsync("zoom");
             carregouImagem = true;
         }
-        else carregouImagem = false;
+        else if (!arquivo.Type.Contains("image")) { carregouImagem = false; }
 
         return true;
     }
