@@ -24,15 +24,14 @@
                     <button type="button" class="btn btn-sm btn-outline-primary" @onclick="GirarImagem">Girar Imagem</button>
                 </div>
                 <br />
-                <div class="row" >
+                <div class="row">
                     <div class="col-6">
-                        <img src="data:@arquivo.Type;base64, @arquivoBase64" style="width:100%; height:auto" class="drift-trigger" data-zoom="data:@arquivo.Type;base64, @arquivoBase64" @onload="zoom" />
+                        <img src="data:@arquivo.Type;base64, @arquivoBase64" style="width:100%; height:auto" class="drift-trigger" data-zoom="data:@arquivo.Type;base64, @arquivoBase64" />
                     </div>
-                    <div class="col-6" >
+                    <div class="col-6">
                         <div class="detail"></div>
                     </div>
                 </div>
-
             }
 
             @if (arquivo.Type.Contains("pdf"))
@@ -57,11 +56,9 @@
     IFileListEntry arquivo;
 
     private string arquivoBase64;
+    private bool carregouImagem = false;
 
-    void GirarImagem()
-    {
-        arquivoBase64 = Auxiliar.GirarImagem(arquivoBase64);
-    }
+    void GirarImagem() => arquivoBase64 = Auxiliar.GirarImagem(arquivoBase64);
 
     async Task<bool> HandleFileSelected(IFileListEntry[] files)
     {
@@ -69,12 +66,13 @@
 
         arquivoBase64 = await Auxiliar.ArquivoEmBase64(arquivo);
 
+        if (arquivo.Type.Contains("image") && !carregouImagem)
+        {
+            await JSRuntime.InvokeVoidAsync("zoom");
+            carregouImagem = true;
+        }
+        else carregouImagem = false;
 
         return true;
-    }
-
-    async void zoom()
-    {
-        await JSRuntime.InvokeVoidAsync("zoom");
     }
 }
